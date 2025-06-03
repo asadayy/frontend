@@ -87,7 +87,7 @@ const SkinAnalyzer = () => {
 
     try {
       // Directly use the backend URL instead of relying on the proxy
-      const response = await axios.post('http://localhost:5000/api/skin-analyzer/analyze', formData, {
+      const response = await axios.post('https://backend-xi-rose-55.vercel.app/api/skin-analyzer/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
