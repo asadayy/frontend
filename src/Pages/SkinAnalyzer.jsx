@@ -1,7 +1,28 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import imageNotFound from '../Components/Assets/ImageNotFound.png';
 import './Styles/SkinAnalyzer.css';
+
+// Function to get the correct image URL
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return imageNotFound;
+  
+  try {
+    // If the image URL is already a full URL, return it as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Ensure the path has a leading slash
+    const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    
+    // Construct the full URL by directly appending to the backend URL
+    return `https://backend-xi-rose-55.vercel.app${normalizedPath}`;
+  } catch (error) {
+    console.error('Error processing image URL:', error);
+    return imageNotFound;
+  }
+};
 
 const SkinAnalyzer = () => {
   const [image, setImage] = useState(null);
@@ -266,29 +287,56 @@ const SkinAnalyzer = () => {
           const usageMatch = result.recommendations.match(usageRegex);
           
           // Create a consistent product section with simple headings and dynamically populated content
+          // Try to get product image based on product ID
+          // Format the image path according to how they're stored in the database
+          // The ID is in format 'skincare-11' which maps to a product image path
+          let imagePath = null;
+          if (productId) {
+            // Check if the ID contains category info (e.g., 'skincare-11')
+            if (productId.includes('-')) {
+              const parts = productId.split('-');
+              if (parts.length === 2) {
+                const category = parts[0];
+                const id = parts[1];
+                imagePath = `/${category}/${id}.jpg`;
+              } else {
+                imagePath = `/products/${productId}.jpg`;
+              }
+            } else {
+              imagePath = `/products/${productId}.jpg`;
+            }
+          }
+          const imageUrl = imagePath ? getImageUrl(imagePath) : null;
+          
           return `<div class="product-section simple">
-            <h3>${productNameTrimmed}</h3>
+            ${imageUrl ? `<div class="product-image-container">
+              <img src="${imageUrl}" alt="${productNameTrimmed}" class="product-image" onerror="this.onerror=null; this.src='${imageNotFound}';" />
+            </div>` : ''}
             
-            <div class="product-details-section">
-              <div class="product-why-helps">
-                <h4>Why It Helps:</h4>
-                <p>${benefits || 'Addresses your specific skin concerns based on analysis.'}</p>
-              </div>
+            <div class="product-info">
+              <h3>${productNameTrimmed}</h3>
               
-              <div class="product-key-ingredients">
-                <h4>Key Ingredients:</h4>
-                <ul>
-                  ${ingredientMatch && ingredientMatch[1] ? 
-                    ingredientMatch[1].split(',').map(ingredient => `<li>${ingredient.trim()}</li>`).join('') : 
-                    '<li>Contains active ingredients tailored for your skin needs</li>'}
-                </ul>
+              <div class="product-details-section">
+                <div class="product-why-helps">
+                  <h4>Why It Helps:</h4>
+                  <p>${benefits || 'Addresses your specific skin concerns based on analysis.'}</p>
+                </div>
+                
+                <div class="product-key-ingredients">
+                  <h4>Key Ingredients:</h4>
+                  <ul>
+                    ${ingredientMatch && ingredientMatch[1] ? 
+                      ingredientMatch[1].split(',').map(ingredient => `<li>${ingredient.trim()}</li>`).join('') : 
+                      '<li>Contains active ingredients tailored for your skin needs</li>'}
+                  </ul>
+                </div>
+                
+                ${usageMatch && usageMatch[1] ? `
+                <div class="product-usage">
+                  <h4>How to Use:</h4>
+                  <p>${usageMatch[1].trim()}</p>
+                </div>` : ''}
               </div>
-              
-              ${usageMatch && usageMatch[1] ? `
-              <div class="product-usage">
-                <h4>How to Use:</h4>
-                <p>${usageMatch[1].trim()}</p>
-              </div>` : ''}
             </div>
           </div>`;
         })
@@ -318,29 +366,35 @@ const SkinAnalyzer = () => {
           const usageRegex = new RegExp(`${escapedProductName}[^\n]*?(?:usage|how to use|apply|application)\s*:?\s*([^\n]+)`, 'i');
           const usageMatch = result.recommendations.match(usageRegex);
           
+          // Try to find an image by matching the product name with known products
+          // This is a fallback for products without explicit IDs
+          // In a real implementation, you might want to search for the product in your database
+          
           return `<div class="product-section simple">
-            <h3>${productNameTrimmed}</h3>
-            
-            <div class="product-details-section">
-              <div class="product-why-helps">
-                <h4>Why It Helps:</h4>
-                <p>${benefits || 'Addresses your specific skin concerns based on analysis.'}</p>
-              </div>
+            <div class="product-info">
+              <h3>${productNameTrimmed}</h3>
               
-              <div class="product-key-ingredients">
-                <h4>Key Ingredients:</h4>
-                <ul>
-                  ${ingredientMatch && ingredientMatch[1] ? 
-                    ingredientMatch[1].split(',').map(ingredient => `<li>${ingredient.trim()}</li>`).join('') : 
-                    '<li>Contains active ingredients tailored for your skin needs</li>'}
-                </ul>
+              <div class="product-details-section">
+                <div class="product-why-helps">
+                  <h4>Why It Helps:</h4>
+                  <p>${benefits || 'Addresses your specific skin concerns based on analysis.'}</p>
+                </div>
+                
+                <div class="product-key-ingredients">
+                  <h4>Key Ingredients:</h4>
+                  <ul>
+                    ${ingredientMatch && ingredientMatch[1] ? 
+                      ingredientMatch[1].split(',').map(ingredient => `<li>${ingredient.trim()}</li>`).join('') : 
+                      '<li>Contains active ingredients tailored for your skin needs</li>'}
+                  </ul>
+                </div>
+                
+                ${usageMatch && usageMatch[1] ? `
+                <div class="product-usage">
+                  <h4>How to Use:</h4>
+                  <p>${usageMatch[1].trim()}</p>
+                </div>` : ''}
               </div>
-              
-              ${usageMatch && usageMatch[1] ? `
-              <div class="product-usage">
-                <h4>How to Use:</h4>
-                <p>${usageMatch[1].trim()}</p>
-              </div>` : ''}
             </div>
           </div>`;
         })
