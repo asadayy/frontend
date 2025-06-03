@@ -13,14 +13,14 @@
 /* Hero Slider */
 .hero-slider {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 20px auto;
-  height: 600px;
+  height: 900px;
   position: relative;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: height 0.3s ease;
+  transition: height 0.3s, width 0.3s ease;
 }
 
 .hero-slider .slider-image {
@@ -271,7 +271,7 @@
 @media (min-width: 1600px) {
   .hero-slider {
     height: 800px;
-    max-width: 1400px;
+    max-width: 1600px;
   }
 
   .category-section,
