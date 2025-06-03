@@ -36,8 +36,18 @@ const Products = () => {
                 return imageUrl;
             }
             
-            // Construct the full URL using the backend static route
-            const fullUrl = `https://backend-xi-rose-55.vercel.app/static/${imageUrl}`;
+            // First try with the static path
+            let fullUrl = `https://backend-xi-rose-55.vercel.app/static/${imageUrl}`;
+            
+            // If the image URL starts with 'uploads/', use the direct uploads path
+            if (imageUrl.includes('uploads/')) {
+                fullUrl = `https://backend-xi-rose-55.vercel.app/${imageUrl}`;
+            }
+            
+            // For specific product directories, ensure they use the static path
+            if (imageUrl.includes('Ordinary/Products/')) {
+                fullUrl = `https://backend-xi-rose-55.vercel.app/static/${imageUrl}`;
+            }
             
             // Log the URL for debugging
             console.log('Image URL Debug:', {
