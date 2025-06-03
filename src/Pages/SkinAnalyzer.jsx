@@ -84,6 +84,8 @@ const SkinAnalyzer = () => {
 
     const formData = new FormData();
     formData.append('skinImage', image);
+    // Add flag to indicate the server should not save the file locally
+    formData.append('skipLocalSave', 'true');
 
     try {
       // Directly use the backend URL instead of relying on the proxy
